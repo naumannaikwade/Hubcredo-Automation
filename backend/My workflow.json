@@ -1,0 +1,113 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "fromEmail": "Hubcredo <noreply@hubcredo.com>",
+        "toEmail": "={{ $json.body.user.email}}",
+        "subject": "=Hubcredo Automation - Cycle {{ $json.body.cycle.number }}",
+        "html": "=<h2>Hubcredo Automation</h2>\n<p>Cycle: {{ $json.body.cycle.number }}/{{ $json.body.metadata.totalCycles }}</p>\n<p>Email: {{ $json.body.user.email }}</p>\n<p>Time: {{ $json.body.timestamp }}</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "426e085e-16d1-48b4-8a82-9a83001f652e",
+      "name": "Send email",
+      "webhookId": "21d4155b-5149-48f0-81e1-502011cc2ee8",
+      "credentials": {
+        "smtp": {
+          "id": "AtDHNkHoB3qDKrIa",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/hubcredo-signup",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": false
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "8a360a08-e755-4d21-a643-6e21c206663f",
+      "name": "Webhook",
+      "webhookId": "15f8ff6d-8159-4456-b56f-01d4a64d8923",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": true,\n  \"cycle\": \"{{ $node['Webhook'].item.json.body.cycle.number }}\",\n  \"total\": \"{{ $node['Webhook'].item.json.body.cycle.metadata.totalCycles }}\",\n  \"email\": \"{{ $node['Webhook'].item.json.body.user.email }}\",\n  \"sent_at\": \"{{ $now }}\",\n  \"execution_id\": \"{{ $execution.id }}\"\n}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        416,
+        0
+      ],
+      "id": "82943b3a-bd1d-49bb-8507-ccdc9208cc54",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Send email": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": 60,
+    "availableInMCP": false
+  },
+  "versionId": "8150d0d1-3a02-48e5-b0e5-b02c21d667ae",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5d5a1689ae1ed32e305137febe5d470e1aa7c8f0624a9417c1dc1e39f1096bda"
+  },
+  "id": "vNfT5JKXJYbwHX6R",
+  "tags": []
+}
